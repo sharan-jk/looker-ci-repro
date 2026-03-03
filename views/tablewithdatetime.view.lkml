@@ -2,10 +2,6 @@ view: tablewithdatetime {
 
   sql_table_name: `takashimori-premium.repro.tablewithdatetime` ;;
 
-  parameter: date_boundary {
-    type: date
-  }
-
   dimension_group: date {
     type: time
     timeframes: [date]
@@ -17,17 +13,24 @@ view: tablewithdatetime {
     sql: ${TABLE}.name ;;
   }
 
+  # This mimics customer's telecast_date_filter
+  filter: date_boundary_filter {
+    type: date
+  }
+
   dimension: is_current_period {
     type: yesno
     sql:
       CASE
-        WHEN ${date_date} >= {% parameter date_boundary %} THEN TRUE
+        WHEN ${date_date} >= {% date_start date_boundary_filter %}
+        THEN TRUE
         ELSE FALSE
       END ;;
   }
 
-  measure: count {
+  measure: current_period_count {
     type: count
+    filters: [is_current_period: "Yes"]
   }
 
 }
